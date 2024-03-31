@@ -34,6 +34,10 @@ namespace ClassLibrary.Services
         {
             try
             {
+                if (_context.Tags.Count() > 0)
+                {
+                    await _context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE Tags");
+                }
                 List<Tag> tags = new List<Tag>();
                 for (int i = 1; i <= 10; i++)
                 {
