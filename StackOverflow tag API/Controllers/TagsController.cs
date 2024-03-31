@@ -1,4 +1,5 @@
 ﻿using ClassLibrary.Interfaces;
+using ClassLibrary.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,9 +15,26 @@ namespace StackOverflow_tag_API.Controllers
             _tagsService = tagsService;
         }
         [HttpGet]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> Get(int page, int pagesize,string? order,string? sort)
         {
-            return Ok(await _tagsService.GetTagsAsync(0,0));
+            try
+            {
+                if (page <= 0)
+                {
+                    return BadRequest("Wrong page");
+                }
+                if (pagesize < 10 || pagesize > 100)
+                {
+                    return BadRequest("Wrong page size");
+                }
+                List<Tag> tags = await _tagsService.GetTagsAsync(page, pagesize, order, sort);
+                List<TagDTO> tagsDTO = await _tagsService.GetPopularityList(tags);
+                return Ok(tagsDTO);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
         [HttpPut]
         public async Task<IActionResult> Put()
