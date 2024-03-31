@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Text.Json;
 using Newtonsoft.Json;
+using System.Net;
 
 namespace ClassLibrary.Services
 {
@@ -21,7 +22,8 @@ namespace ClassLibrary.Services
         public ApiService(DataContext context)
         {
             _context = context;
-            httpClient = new HttpClient();
+            var clientHandler = new HttpClientHandler() { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate };
+            httpClient = new HttpClient(clientHandler);
             httpClient.BaseAddress = new Uri("https://api.stackexchange.com/2.3/");
         }
         
@@ -30,19 +32,17 @@ namespace ClassLibrary.Services
             string url = $"tags?page={page}&pagesize={pageSize}&order=desc&sort=popular&site=stackoverflow";
             if(page <= 0)
             {
-
+                page = 1;
             }
             if(pageSize <= 0)
             {
-
+                pageSize = 10;
             }
-            Console.WriteLine(url);
             HttpResponseMessage response = await httpClient.GetAsync(url);
             if(response.IsSuccessStatusCode)
             {
-                
+                var tagsResult = JsonConvert.DeserializeObject<dynamic>(await response.Content.ReadAsStringAsync());
                 List<Tag> tags = new List<Tag>();
-                /* TODO READ JSON RESPONSE
                 foreach(dynamic item in tagsResult.items)
                 {
                     Tag tag = new Tag
@@ -55,7 +55,6 @@ namespace ClassLibrary.Services
                     };
                     tags.Add(tag);
                 }
-                */
                 return tags;
             }
             
