@@ -20,3 +20,5 @@
 * Docker
 ## Startup:
 ### To run the project just clone this repository and run "docker-compose up" command 
+## Sorting options:
+### /api/Tags GET: Retreives list of TagDTO objects. It requires parameters int page (page * pagesize must be <= amount of tags in db) and int pagesize (must be >= 10 and <= 100). Optional filter parameters are string order ("asc" orders by ascending, in any other case orders by descending) and string sort ("popularity" sorts list by tag popularity and in case of null is selected as basic sort option, "name" sorts list by tag name).
