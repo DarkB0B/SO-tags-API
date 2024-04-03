@@ -10,8 +10,10 @@ namespace StackOverflow_tag_API.Controllers
     public class TagsController : ControllerBase
     {
         private readonly ITagsService _tagsService;
-        public TagsController(ITagsService tagsService)
+        private readonly ILogger _logger;
+        public TagsController(ITagsService tagsService, ILogger<TagsController> logger)
         {
+            _logger = logger;
             _tagsService = tagsService;
         }
         [HttpGet]
@@ -19,6 +21,7 @@ namespace StackOverflow_tag_API.Controllers
         {
             try
             {
+                _logger.LogInformation("Getting tags from database");
                 if (page <= 0)
                 {
                     return BadRequest("Wrong page");
@@ -33,6 +36,7 @@ namespace StackOverflow_tag_API.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError("Error Occured: " + ex.Message);
                 return BadRequest(ex.Message);
             }
         }
@@ -41,11 +45,13 @@ namespace StackOverflow_tag_API.Controllers
         {
             try
             {
+                _logger.LogInformation("Updating tags in database");
                 await _tagsService.UpdateTagsInDb();
                 return Ok();
             }
             catch (Exception ex)
             {
+                _logger.LogError("Error Occured: " + ex.Message);
                 return BadRequest(ex.Message);
             }
         }

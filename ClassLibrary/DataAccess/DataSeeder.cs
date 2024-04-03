@@ -1,4 +1,5 @@
 ﻿using ClassLibrary.Interfaces;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,8 +12,10 @@ namespace ClassLibrary.DataAccess
     {
         private readonly DataContext _context;
         private readonly ITagsService _tagsService;
-        public DataSeeder(DataContext context, ITagsService tagsService)
+        private readonly ILogger _logger;
+        public DataSeeder(DataContext context, ITagsService tagsService, ILogger<DataSeeder> logger)
         {
+            _logger = logger;
             _tagsService = tagsService;
             _context = context;
         }
@@ -25,15 +28,15 @@ namespace ClassLibrary.DataAccess
         public async Task SeedDataAsync()
         {
             try
-            {   
-                Console.WriteLine("Seeding Data");
+            {
+                _logger.LogInformation("Seeding Data");
                 await _tagsService.UpdateTagsInDb();
                 
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
-                throw new Exception(ex.Message, ex);
+                _logger.LogError("An error occurred while seeding the database: " + ex);
+                throw;
             }
         }
     }

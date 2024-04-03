@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Text.Json;
 using Newtonsoft.Json;
 using System.Net;
+using Microsoft.Extensions.Logging;
 
 namespace ClassLibrary.Services
 {
@@ -18,10 +19,12 @@ namespace ClassLibrary.Services
     {
         private readonly DataContext _context;
         private readonly HttpClient httpClient;
+        private readonly ILogger _logger;
 
-        public ApiService(DataContext context)
+        public ApiService(DataContext context, ILogger<IApiService> logger)
         {
             _context = context;
+            _logger = logger;
             var clientHandler = new HttpClientHandler() { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate };
             httpClient = new HttpClient(clientHandler);
             httpClient.BaseAddress = new Uri("https://api.stackexchange.com/2.3/");
@@ -31,6 +34,7 @@ namespace ClassLibrary.Services
         {
             try
             {
+                _logger.LogInformation("Calling SO API");
                 string url = $"tags?page={page}&pagesize={pageSize}&order=desc&sort=popular&site=stackoverflow";
                 if (page <= 0)
                 {
@@ -62,11 +66,13 @@ namespace ClassLibrary.Services
 
                 else
                 {
+                    _logger.LogError($"SO API Request Failed. Status Code = {response.StatusCode}");
                     throw new Exception($"SO API Status Code = {response.StatusCode}");
                 }
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex.Message);
                 Console.WriteLine(ex.Message);
                 throw;
             }

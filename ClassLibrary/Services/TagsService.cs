@@ -2,6 +2,7 @@
 using ClassLibrary.Interfaces;
 using ClassLibrary.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,16 +15,18 @@ namespace ClassLibrary.Services
     {
         private readonly IApiService _apiService;
         private readonly DataContext _context;
+        private readonly ILogger _logger;
         
-        public TagsService(DataContext context, IApiService apiService)
+        public TagsService(DataContext context, IApiService apiService, ILogger<TagsService> logger)
         {
+            _logger = logger;
             _context = context;
             _apiService = apiService;
         }
+
         public async Task<List<Tag>> GetTagsAsync(int page, int pageSize, string? order, string? sort)
         {
-            try
-            {
+
                 List<Tag> tags = new List<Tag>();
                 if (page < 1)
                 {
@@ -36,7 +39,7 @@ namespace ClassLibrary.Services
 
                 int tagsAmmount = await _context.Tags.CountAsync();
 
-                if (page * pageSize + 100 > tagsAmmount)
+                if (page * pageSize > tagsAmmount)
                 {
                     throw new ArgumentOutOfRangeException("Page out of range");
                 }
@@ -67,26 +70,19 @@ namespace ClassLibrary.Services
                     throw new ArgumentException("Incorrect sort parameter");
                 }
                 return tags;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-                throw;
-            }
+
 
         }
 
         public async Task<int> GetTagsCountAsync()
         {
             int count = await _context.Tags.SumAsync(tags => tags.Count);
-            Console.WriteLine(" COUNTING RETURNED: " + count);
             return count;
         }
 
         public async Task UpdateTagsInDb()
         {
-            try
-            {
+
                 if (_context.Tags.Count() > 0)
                 {
                     await _context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE Tags");
@@ -99,12 +95,7 @@ namespace ClassLibrary.Services
                 }
                 await _context.Tags.AddRangeAsync(tags);
                 await _context.SaveChangesAsync();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-                throw;
-            }
+
         }
 
         public async Task<List<TagDTO>> GetPopularityList(List<Tag> tags)
